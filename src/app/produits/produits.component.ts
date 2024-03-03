@@ -1,19 +1,30 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Produit } from '../model/protuit';
 import { NgForm } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-produits',
   templateUrl: './produits.component.html',
   styleUrls: ['./produits.component.css'],
 })
-export class ProduitsComponent {
-  produits: Array<Produit> = [
-    { id: 1, code: 'x12', designation: 'Panier plastique', prix: 20 },
-    { id: 2, code: 'y4', designation: 'table en bois', prix: 100 },
-    { id: 3, code: 'y10', designation: 'salon en cuir', prix: 3000 },
-  ];
+export class ProduitsComponent implements OnInit {
+  produits: Array<Produit> = [];
   produitCourant = new Produit();
+  private baseUrl ='http://localhost:9999/produits/';
+  constructor(private http: HttpClient) {}
+  ngOnInit(): void {
+    console.log('Initialisation du composant: Récupérer la liste des produits');
+    this.http.get<Array<Produit>>('http://localhost:9999/produits').subscribe({
+      next: (data) => {
+        console.log('Succès GET');
+        this.produits = data;
+      },
+      error: (err) => {
+        console.log('Erreur GET');
+      },
+    });
+  }
   existeDeja(id: number): boolean {
     return this.produits.some((produit) => produit.id === id);
   }
@@ -34,20 +45,39 @@ export class ProduitsComponent {
         );
         if (confirmation) {
           // Mettre à jour le produit
-          this.produits[this.produits.indexOf(produitAMettreAJour)] =
-            form.value;
-            this.produitCourant=new Produit();
+          const p = form.value;
+          console.log('update de produit');
+          const url = `http://localhost:9999/produits/${p.id}`;
+          this.http.put<Produit>(url, p).subscribe({
+            next: (data) => {
+              console.log('Succès Update');
+              this.produits[this.produits.indexOf(produitAMettreAJour)] = p;
+              this.produitCourant = new Produit();
+            },
+            error: (err) => {
+              console.log('Erreur Update produit');
+            },
+          });
         }
       }
     } else {
       // Ajout du produit au tableau si l'ID est unique
-      this.produits.push(form.value);
+      const p = form.value;
+      console.log('Ajout de produit');
+      this.http.post<Produit>('http://localhost:9999/produits', p).subscribe({
+        next: (data) => {
+          console.log('Succès Post');
+          this.produits.push(p);
+        },
+        error: (err) => {
+          console.log('Erreur Creation produit');
+        },
+      });
     }
   }
 
   modifierProduit(p: Produit) {
-    const produitAEditer = this.produits.find(produit => produit.id === p.id);
-
+    const produitAEditer = this.produits.find((produit) => produit.id === p.id);
     // Si le produit est trouvé, associer ses attributs aux champs du formulaire
     if (produitAEditer != undefined) {
       this.produitCourant = produitAEditer;
@@ -65,7 +95,16 @@ export class ProduitsComponent {
       console.log('indice du produit à supprimer: ' + index);
       if (index !== -1) {
         // supprimer le produit référencé
-        this.produits.splice(index, 1);
+        console.log('suppresion de produit');
+        this.http.delete(this.baseUrl+p.id).subscribe({
+          next: (data) => {
+            console.log('Succès Delete');
+            this.produits.splice(index, 1);
+          },
+          error: (err) => {
+            console.log('Erreur suppression produit');
+          },
+        });
       }
     } else {
       console.log('Suppression annulée...');

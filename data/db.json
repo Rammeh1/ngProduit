@@ -1,0 +1,16 @@
+{
+  "produits": [
+    {
+      "id": "3",
+      "code": "y10",
+      "designation": "salon en cuir",
+      "prix": 3000
+    },
+    {
+      "id": "4",
+      "code": "z45",
+      "designation": "Ordinateur",
+      "prix": 2500
+    }
+  ]
+}

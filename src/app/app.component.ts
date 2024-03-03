@@ -11,6 +11,7 @@ export class AppComponent {
     { titre: 'accueil', route: '/accueil' },
     { titre: 'produits', route: '/produits' },
     { titre: 'ajouterProduits', route: '/ajouterProduits' },
+    { titre: 'About', route: '/about' },
   ];
   actionCourante: any;
   setActionCourante(a: any) {
